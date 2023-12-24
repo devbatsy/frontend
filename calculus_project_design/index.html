@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="sydney101.css">
+</head>
+<body>
+    <audio src="tr.mp3"></audio>
+    <!-- <input type="color" name="" id=""> -->
+    <div class="fullScreen_container">
+        <div class="container three_d_style" style="background: rgb(64, 70, 87)">
+            <div class="tab_section">
+                <div class="ai_panel three_d_style">
+                    <div class="main_panel">
+                        <div class="speech_visual three_d_style"></div>
+                        <p>syd.C01</p>
+                    </div>
+                </div>
+                <div class="question_section">
+                    <div class="question_tag three_d_style">
+                        <input type="text" placeholder="enter your question" class="question three_d_child">
+                        <div class="slv">
+                            <span class="btn three_d_style"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="below three_d_style">
+                <div class="note_section three_d_child">
+                    <div class="question_page three_d_style">
+                        <p>verify your question</p>
+                        <div class="wrap_content">
+                            <div class="display"></div>
+                        </div>
+                    </div>
+                    <div class="solution_page three_d_style"></div>
+                </div>
+                <div class="canvas_visual_section three_d_child"></div>
+            </div>
+        </div>
+    </div>
+    <script src="sydneyC01CreateSoundOscillation.js"></script>
+    <script src="sydneyC01GetFrequency.js"></script>
+    <script type="module">
+        import interpreter from './sydney101_interprete.js';
+        import bracket from './simplify.js';
+        import refine from './sydney101_refine_interprete.js';
+        import sort from './stringSortingAlgorithm.js';
+        import bookify from './book_lib/bookify.js'
+        book_lib = bookify
+        
+        let note = document.querySelector('.note_section .display');
+        let input = document.querySelector('.question');
+        input.addEventListener('input', e =>{
+            let new_text = new refine(bracket,sort,e.target.value)
+            refined_question = new interpreter(new_text.final_answer.answer,'x').result.answer
+            note.innerHTML = refined_question
+        })
+    </script>
+</body>
+</html>
