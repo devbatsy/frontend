@@ -46,7 +46,7 @@ class createBooksAndFlip{
             ['borderTopRightRadius','10px'],
             ['borderBottomRightRadius','10px'],
             ['transformOrigin','left'],
-            ['transition','none'],
+            ['transition','none']
             
         ]
         this.child_style = [
@@ -63,12 +63,13 @@ class createBooksAndFlip{
             ['padding','3px'],
             ['paddingLeft','20px'],
             ['paddingTop','10px'],
-            ['borderLeft','2px solid #171717'],
+            ['borderLeft','3px ridge #000'],
             ['backfaceVisibility','hidden'],
             ['fontFamily','Segoe Print'],
             ['fontWeight','900'],
             ['overflow','scroll'],
-            ['background','#fff']
+            ['background','#fff'],
+            ['boxShadow','1px 1px 5px #000']
         ]
         this.f_btn_style = [
             ['position','absolute'],
@@ -77,7 +78,8 @@ class createBooksAndFlip{
             ['transform','translateY(-50%)'],
             ['height','30px'],
             ['width','30px'],
-            ['borderRadius','50%']
+            ['borderRadius','50%'],
+            ['zIndex','1000']
         ]
         this.b_btn_style = [
             ['position','absolute'],
@@ -85,7 +87,8 @@ class createBooksAndFlip{
             ['transform','translateY(-50%)'],
             ['height','30px'],
             ['width','30px'],
-            ['borderRadius','50%']
+            ['borderRadius','50%'],
+            ['zIndex','1000']
         ]
         this.threed_style = [
             ['boxShadow',`-1px -1px 3px #181818 inset,
@@ -106,14 +109,26 @@ class createBooksAndFlip{
             ['backfaceVisibility','visible'],
             ['background','rgb(24, 26, 36)'],
             ['border','none'],
-            ['height','105%'],
-            ['minWidth','105%'],
+            ['height','103%'],
+            ['minWidth','103%'],
             ['borderRadius','5px'],
             ['display','flex'],
             ['justifyContent','center'],
             ['alignItems','center'],
             ['fontFamily','monospace'],
-            ['color','#fff']
+            ['color','#fff'],
+            ['boxShadow','none']
+        ]
+        this.fullScreenStyle = [
+            ['position','absolute'],
+            ['top','5px'],
+            ['right','5px'],
+            ['zIndex','1000'],
+            ['height','20px'],
+            ['width','20px'],
+            ['backgroundImage','url(imgs/page.png)'],
+            ['background','green'],
+            ['cursor','pointer']
         ]
         this.style_append = (parent,style_array) =>
         {
@@ -126,14 +141,12 @@ class createBooksAndFlip{
         }
         this.remove_animate = (elem,array) =>{
             array.forEach((val,idx,arr) =>{
-                // val.style.zIndex = `${100-(arr.length-idx)}`
             })
             elem.style.transform = 'rotateY(-180deg)';
         
         }
         this.complete_animate = (elem) =>{
             elem.style.transform = 'rotateY(0)';
-            // elem.style.zIndex = '100'
         }
         this.disable_flip_forward = (idx,array1,array2)=>{
             switch(true)
@@ -147,6 +160,8 @@ class createBooksAndFlip{
         }
         this.animate_bool = false
         this.size = bookInitParams.size;
+        this.fullScreenIcon = document.createElement('div');
+        this.style_append(this.fullScreenIcon,this.fullScreenStyle)
         this.string = 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Deserunt incidunt fugit voluptas ipsum iure? Ipsa eos, dicta rem totam doloremque minus? Beatae similique quod asperiores consequuntur hic fugiat odit maiores.'
         this.parent = bookInitParams.parent;
         this.forward_btn = document.createElement('span');
@@ -186,15 +201,17 @@ class createBooksAndFlip{
         this.bool_array = new Array(false,false);
         this.book.appendChild(this.cover_page);
         this.book.appendChild(this.page_parent);
+        this.book.appendChild(this.fullScreenIcon)
         this.parent.appendChild(this.book);
-        this.aux1.appendChild(this.forward_btn);
-        this.aux2.appendChild(this.backward_btn);
+        this.page_parent.appendChild(this.forward_btn);
+        this.cover_page.appendChild(this.backward_btn);
         this.YglobalRotation = 0;
         this.stagnant_matrix = [0,false];
         this.animationFrame = [0,1];//[dynamic frame rate,static frame rate]
         this.currentAnimationElement = null;
         this.endForwardAnimation = false;
         this.endBackwardAnimation = false;
+        this.method = 'manual'
         this.size_refine = (parent) =>{
                 let width = getComputedStyle(parent).width;
                 let height = getComputedStyle(parent).height
@@ -224,7 +241,7 @@ class createBooksAndFlip{
     static run(params)
     {
         const {pageNo,parent,page_parent,cover_page,aux_element,bool_array,string,page_style,child_style,style_append,animate01,remove_animate,complete_animate,disable_flip_forward,forward_btn,backward_btn,shadow_style,pageNum_style,size_refine,pageSettings,bookMaxSizing,disablePageSound,animationFrame} = params;
-        let {size,page_elements,prev_pages,animate_bool,YglobalRotation,stagnant_matrix,currentAnimationElement,endBackwardAnimation,endForwardAnimation,frontStyle} = params;
+        let {size,page_elements,prev_pages,animate_bool,YglobalRotation,stagnant_matrix,currentAnimationElement,endBackwardAnimation,endForwardAnimation,frontStyle,method} = params;
 
         let leftBool = false;
         let rightBool = false;
@@ -233,6 +250,7 @@ class createBooksAndFlip{
         let animationStart = false
         let animationFf = false
         let animation;
+        const audio = new Audio('./book_lib/flip_sound/flip.mp3');
         const setMax_size = () =>{
             page_parent.style.maxHeight = `${size[0]}px`;
             page_parent.style.maxWidth = `${size[1]}px`;
@@ -241,7 +259,6 @@ class createBooksAndFlip{
         }
         function animation_MainFunction(){
                 animation = requestAnimationFrame(animation_MainFunction);
-                // console.log(YglobalRotation)
                 currentAnimationElement.style.transform = `rotatey(-${YglobalRotation}deg)`;//INSTANCE 1;
                 //INSTANCE 2;
                 switch(true)
@@ -257,23 +274,35 @@ class createBooksAndFlip{
                 switch(true)
                 {
                     case rightBool && rff:
-                        if(YglobalRotation >= 50){
-                            customisedFunction('incre',180)
-                        }
-                        else if(YglobalRotation < 50){
-                            customisedFunction('decre',0)
+                        switch(true)
+                        {
+                            case method === 'manual':
+                                if(YglobalRotation >= 50){
+                                    customisedFunction('incre',180)
+                                }
+                                else if(YglobalRotation < 50){
+                                    customisedFunction('decre',0)
+                                }
+                            break;
+                            case method === 'auto':
+                                customisedFunction('incre',180)
                         }
                     break;
                     case leftBool && lff:
-                        if(YglobalRotation >= 140){
-                            customisedFunction('incre',180)
-                        }
-                        else if(YglobalRotation < 140)
+                        switch(true)
                         {
-                            customisedFunction('decre',0)
+                            case method === 'manual':
+                                if(YglobalRotation >= 140){
+                                    customisedFunction('incre',180)
+                                }
+                                else if(YglobalRotation < 140)
+                                {
+                                    customisedFunction('decre',0)
+                                }
+                            break;
+                            case method === 'auto':
+                                customisedFunction('decre',0)
                         }
-
-                    
                 }
         }
 
@@ -371,47 +400,24 @@ class createBooksAndFlip{
         })
 
         backward_btn.addEventListener('click', e =>{
-            switch(true)
-            {
-                case page_elements.length !== 0:
-                    flip_forward()
-            }
+                    flip_forward();
         })
 
         forward_btn.addEventListener('click', e =>{
-            switch(true)
-            {
-                case prev_pages.length !== 0:
-                    flip_backward()
-            }
+                    flip_backward();
         })
 
-       function flip_forward(){
-        let audio = new Audio('./book_lib/flip_sound/flip.mp3');
-        audio.volume = .1
-        switch(true)
-        {
-            case !disablePageSound:
-                audio.play()
+        function flip_forward(){
+            method = 'auto';
+            touching(0);
+            rff = true;
         }
-        let new_array = [page_elements[page_elements.length-1]];
-        page_elements = page_elements.filter((val,idx,array) =>{return idx !== array.length-1});
-        prev_pages.push(...new_array);
-       }
 
-       function flip_backward(){
-        endBackwardAnimation = true
-        let audio = new Audio('./book_lib/flip_sound/flip.mp3');
-        audio.volume = .1
-        switch(true)
-        {
-            case !disablePageSound:
-                audio.play()
+        function flip_backward(){
+            method = 'auto';
+            touching(1);
+            lff = true;
         }
-        let new_array = [prev_pages[prev_pages.length-1]];
-        prev_pages = prev_pages.filter((val,idx,array) =>{return idx !== array.length-1});
-        page_elements.push(...new_array);
-       }
 
        function clearBooleans(idx)
        {
@@ -432,6 +438,7 @@ class createBooksAndFlip{
                 move(e.touches[0].clientX - rect.left,idx)
             })
             val.addEventListener('touchstart',e =>{
+                method = 'manual'
                 touching(idx)
             })
             val.addEventListener('touchend', e =>{
@@ -441,6 +448,7 @@ class createBooksAndFlip{
        })
         aux_element.forEach((val,idx) =>{
             val.addEventListener('mousedown', e =>{
+                method = 'manual'
                 touching(idx)
             })
             val.addEventListener('mouseup', e =>{
@@ -503,10 +511,10 @@ class createBooksAndFlip{
                     switch(true)
                     {
                         case idx === 1 && prev_pages.length !== 0:
-                            YglobalRotation = 180-((x/size[1])*90);
+                            YglobalRotation = 180-((x/size[1])*90) <= 95 ? 95 : 180-((x/size[1])*90);
                         break;
                         case idx === 0 && page_elements.length !== 0:
-                            YglobalRotation = 90-((x/size[1])*90);
+                            YglobalRotation = 90-((x/size[1])*90) >= 85 ? 85 : 90-((x/size[1])*90);
                     }
             }
         }
@@ -554,6 +562,7 @@ class bookInit{
             })
             return style_array
         }
+        this.fullScreenIcon = null
         this.getPage_elements = null
         this.run = () =>{
             switch(true)
@@ -562,7 +571,8 @@ class bookInit{
                     this.pageSettings.coverPageImage = `./book_lib/imgs/${this.pageSettings.coverPageImage}`;
                     this.pageSettings.pageUrl = `./book_lib/imgs/${this.pageSettings.pageUrl}`
                     let bookMain = new createBooksAndFlip(this);
-                    this.getPage_elements = bookMain.page_elements
+                    this.getPage_elements = bookMain.page_elements;
+                    this.fullScreenIcon = bookMain.fullScreenIcon
                 break;
                 default:
                     alert('please set a valid parent element')

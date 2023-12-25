@@ -79,33 +79,33 @@ class create_frequency_mechanism{
                 }
             }
         }
-        this.enterFullscreen = () =>{
-                addEventListener('keydown', e =>{
-                if(e.ctrlKey && e.key === 'd'){
-                    e.preventDefault();
-                    switch(true){
-                        case this.fullScreen:
-                            if(document.webkitExitFullscreen){
-                                document.webkitExitFullscreen();
-                                this.fullScreen = false
-                            }
-                        break;
-                        case !this.fullScreen:
-                            document.querySelector('.fullScreen_container').requestFullscreen().then(() =>{
-                                this.fullScreen = true;
-                            }).catch(() =>{
-                                console.log('enabling incomplete')
-                            })
+        addEventListener('keydown', e =>{
+            if(e.ctrlKey && e.key === 'd'){
+                e.preventDefault();
+                this.enterFullscreen('fullScreen_container')
+            }
+        })
+        this.enterFullscreen = (togElem) =>{
+            switch(true){
+                case this.fullScreen:
+                    if(document.webkitExitFullscreen){
+                        document.webkitExitFullscreen();
+                        this.fullScreen = false
                     }
-                }
-            })
+                break;
+                case !this.fullScreen:
+                    document.querySelector(`.${togElem}`).requestFullscreen().then(() =>{
+                        this.fullScreen = true;
+                    }).catch(() =>{
+                        console.log('enabling incomplete')
+                    })
+            }
         }
-        this.enterFullscreen()
         create_frequency_mechanism.run(this)
     }
     static run(params)
     {
-        const {speech_object,source,audioCtx,analyser,addContentToPages} = params;
+        const {speech_object,source,audioCtx,analyser,addContentToPages,enterFullscreen} = params;
         function connect_freqRender(){
             source.connect(analyser);
             source.connect(audioCtx.destination)
@@ -124,6 +124,10 @@ class create_frequency_mechanism{
             bookify.bookSettings.maxSizing = false
             bookify.run()
             book_pages = bookify.getPage_elements;
+            bookify.fullScreenIcon.addEventListener('click', e =>{
+                enterFullscreen('solution_page')
+            })
+
             try{
                 addContentToPages(book_pages,question_section,solution_section);
             }catch(err){

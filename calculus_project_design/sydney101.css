@@ -3,6 +3,9 @@
     padding: 0;
     box-sizing: border-box;
     outline: none;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 p{
     text-align: center;
@@ -45,7 +48,7 @@ body{
     justify-content: center;
     align-items: center;
     padding: 10px;
-    /* min-width: 600px; */
+    /* min-width: 500px; */
     min-height: 700px;
 }
 .tab_section{
@@ -245,6 +248,7 @@ body{
     transform: translate(100%,-50%);
     transition: transform linear 1s ;
     transition-delay: .5s;
+    padding: 20px;
 }
 .below .canvas_visual_section{
     height: 100%;
